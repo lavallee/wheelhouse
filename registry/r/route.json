@@ -1,0 +1,14 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "route",
+  "title": "Hash routes",
+  "description": "#view/parts?query routes, so every page and filter state is a link.",
+  "files": [
+    {
+      "path": "src/lib/route.ts",
+      "content": "// Hash routes: #view/rest?query. Every page and filter state is a shareable link.\nimport { useEffect, useState } from \"react\";\n\nexport type Route = { view: string; parts: string[]; params: URLSearchParams };\n\nexport function readRoute(): Route {\n  const raw = location.hash.replace(/^#\\/?/, \"\");\n  const [path, query = \"\"] = raw.split(\"?\");\n  const parts = path.split(\"/\").filter(Boolean).map((p) => { try { return decodeURIComponent(p); } catch { return p; } });\n  return { view: parts[0] || \"overview\", parts: parts.slice(1), params: new URLSearchParams(query) };\n}\n\nexport function useRoute(): Route {\n  const [r, setR] = useState(readRoute);\n  useEffect(() => {\n    // Scroll to the top only when the screen changes. A filter, a page, a view\n    // or an open row changes the address too, and must leave the reader in place.\n    let view = readRoute().view;\n    const f = () => {\n      const next = readRoute();\n      if (next.view !== view) window.scrollTo(0, 0);\n      view = next.view;\n      setR(next);\n    };\n    addEventListener(\"hashchange\", f);\n    return () => removeEventListener(\"hashchange\", f);\n  }, []);\n  return r;\n}\n\nexport function href(view: string, parts: string[] = [], params?: Record<string, string | string[] | number | undefined | null>): string {\n  const p = [view, ...parts.map((x) => encodeURIComponent(x))].join(\"/\");\n  const q = new URLSearchParams();\n  for (const [k, v] of Object.entries(params || {})) {\n    if (v === undefined || v === null || v === \"\") continue;\n    for (const x of Array.isArray(v) ? v : [v]) if (x !== \"\") q.append(k, String(x));\n  }\n  const s = q.toString();\n  return \"#\" + p + (s ? \"?\" + s : \"\");\n}\n\nexport function paramsObj(p: URLSearchParams): Record<string, string[]> {\n  const o: Record<string, string[]> = {};\n  p.forEach((v, k) => { (o[k] ||= []).push(v); });\n  return o;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:lib"
+}

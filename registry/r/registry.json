@@ -1,0 +1,259 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "wheelhouse",
+  "homepage": "https://wheelhouse.invalid",
+  "items": [
+    {
+      "name": "theme",
+      "type": "registry:file",
+      "title": "Theme",
+      "description": "The shared neutral theme, Geist, radius and dark mode.",
+      "files": [
+        {
+          "path": "src/index.css",
+          "type": "registry:file",
+          "target": "src/index.css"
+        }
+      ],
+      "dependencies": [
+        "@fontsource-variable/geist",
+        "tw-animate-css",
+        "shadcn"
+      ]
+    },
+    {
+      "name": "transport",
+      "type": "registry:lib",
+      "title": "Transport",
+      "description": "Same-origin reads with ETag, 15-second polling and focus refresh; invalidation of all reads or by path prefix; commands with CSRF and an idempotency key; event streams that reconnect and resume from the last id; last good data kept on error.",
+      "files": [
+        {
+          "path": "src/lib/transport.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
+      "name": "route",
+      "type": "registry:lib",
+      "title": "Hash routes",
+      "description": "#view/parts?query routes, so every page and filter state is a link.",
+      "files": [
+        {
+          "path": "src/lib/route.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
+      "name": "use-sortable",
+      "type": "registry:hook",
+      "title": "Sortable rows",
+      "description": "Three-state column sorting with numeric-aware comparison.",
+      "files": [
+        {
+          "path": "src/hooks/use-sortable.ts",
+          "type": "registry:hook"
+        }
+      ]
+    },
+    {
+      "name": "use-shortcuts",
+      "type": "registry:hook",
+      "title": "Keyboard shortcuts",
+      "description": "Screen shortcuts that never fire while the user is typing or a modifier is held.",
+      "files": [
+        {
+          "path": "src/hooks/use-shortcuts.ts",
+          "type": "registry:hook"
+        }
+      ]
+    },
+    {
+      "name": "shell",
+      "type": "registry:component",
+      "title": "Shell parts",
+      "description": "Section, Stat, ErrorBanner, Empty, Loading, Out, CopyLine, StateBadge, SortHead, Pager, Kv, StatusDot, UsageBar, Move, ConfirmDialog and the formatters.",
+      "files": [
+        {
+          "path": "src/components/shell.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "badge",
+        "button",
+        "card",
+        "dialog",
+        "table",
+        "@wheelhouse/use-sortable"
+      ]
+    },
+    {
+      "name": "frame",
+      "type": "registry:component",
+      "title": "App frame",
+      "description": "Collapsible sidebar, sticky header with breadcrumb title and signed-in person, a status line, and an error boundary per screen. An app supplies its nav, and may group it under labels, give a record its own scoped nav with a way back, add an aside that persists across screens (a bottom bar and sheet on phones), and set the status line, header contents, widths and crumbs.",
+      "files": [
+        {
+          "path": "src/components/frame.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "button",
+        "sheet",
+        "sidebar",
+        "separator",
+        "tooltip",
+        "@wheelhouse/transport",
+        "@wheelhouse/route"
+      ]
+    },
+    {
+      "name": "views",
+      "type": "registry:component",
+      "title": "View switch",
+      "description": "Alternate views of one screen: remembered, shareable in the address, small.",
+      "files": [
+        {
+          "path": "src/components/views.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "layout",
+      "type": "registry:component",
+      "title": "Layouts as data",
+      "description": "A screen names its parts; a layout arranges them in rows and columns and can live in a JSON file. Unknown parts or grids are rejected.",
+      "files": [
+        {
+          "path": "src/components/layout.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "registryDependencies": [
+        "@wheelhouse/views"
+      ]
+    },
+    {
+      "name": "screen-overview",
+      "type": "registry:file",
+      "title": "Overview screen",
+      "description": "What needs the operator, then the state of the system.",
+      "files": [
+        {
+          "path": "src/screens/overview.tsx",
+          "type": "registry:file",
+          "target": "src/screens/overview.tsx"
+        },
+        {
+          "path": "src/screens/overview.layouts.json",
+          "type": "registry:file",
+          "target": "src/screens/overview.layouts.json"
+        }
+      ],
+      "registryDependencies": [
+        "@wheelhouse/shell",
+        "@wheelhouse/transport",
+        "@wheelhouse/route",
+        "@wheelhouse/layout",
+        "@wheelhouse/views"
+      ]
+    },
+    {
+      "name": "screen-list",
+      "type": "registry:file",
+      "title": "List screen",
+      "description": "Filtered, sortable, server-paged list with a detail sheet and a phone layout; all state in the address.",
+      "files": [
+        {
+          "path": "src/screens/items.tsx",
+          "type": "registry:file",
+          "target": "src/screens/items.tsx"
+        }
+      ],
+      "registryDependencies": [
+        "input",
+        "native-select",
+        "sheet",
+        "table",
+        "@wheelhouse/shell",
+        "@wheelhouse/frame",
+        "@wheelhouse/views",
+        "@wheelhouse/transport",
+        "@wheelhouse/route",
+        "@wheelhouse/use-sortable",
+        "@wheelhouse/screen-review"
+      ]
+    },
+    {
+      "name": "screen-review",
+      "type": "registry:file",
+      "title": "Review queue screen",
+      "description": "One item at a time, bounded verbs, keyboard shortcuts, undo.",
+      "files": [
+        {
+          "path": "src/screens/review.tsx",
+          "type": "registry:file",
+          "target": "src/screens/review.tsx"
+        }
+      ],
+      "registryDependencies": [
+        "button",
+        "input",
+        "@wheelhouse/shell",
+        "@wheelhouse/transport",
+        "@wheelhouse/route",
+        "@wheelhouse/use-shortcuts"
+      ]
+    },
+    {
+      "name": "screen-runs",
+      "type": "registry:file",
+      "title": "Runs screen",
+      "description": "Run history, starting a run behind a confirmation that states its cost, and one run in its own scoped nav: summary, submissions and log.",
+      "files": [
+        {
+          "path": "src/screens/runs.tsx",
+          "type": "registry:file",
+          "target": "src/screens/runs.tsx"
+        }
+      ],
+      "registryDependencies": [
+        "button",
+        "table",
+        "@wheelhouse/shell",
+        "@wheelhouse/transport",
+        "@wheelhouse/frame",
+        "@wheelhouse/route"
+      ]
+    },
+    {
+      "name": "screen-settings",
+      "type": "registry:file",
+      "title": "Settings screen",
+      "description": "Small forms saved by commands, plus copyable terminal commands.",
+      "files": [
+        {
+          "path": "src/screens/settings.tsx",
+          "type": "registry:file",
+          "target": "src/screens/settings.tsx"
+        }
+      ],
+      "registryDependencies": [
+        "button",
+        "input",
+        "@wheelhouse/shell",
+        "@wheelhouse/transport"
+      ]
+    }
+  ]
+}

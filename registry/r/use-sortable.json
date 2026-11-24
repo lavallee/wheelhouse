@@ -1,0 +1,14 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "use-sortable",
+  "title": "Sortable rows",
+  "description": "Three-state column sorting with numeric-aware comparison.",
+  "files": [
+    {
+      "path": "src/hooks/use-sortable.ts",
+      "content": "// Per-table sort state: click a header to sort ascending, click again for\n// descending, a third click returns to the screen's default order. Null,\n// missing, and blank values sort as empty (ahead of everything else).\nimport { useMemo, useState } from \"react\";\n\nexport type SortDir = \"asc\" | \"desc\";\nexport type SortState = { key: string; dir: SortDir } | null;\n\n/** Numbers and booleans compare natively; everything else compares as a\n * case-insensitive string with numeric awareness (\"v2\" < \"v10\"). */\nexport function compareCells(a: unknown, b: unknown): number {\n  const blank = (v: unknown) =>\n    v === null || v === undefined || (typeof v === \"string\" && v.trim() === \"\");\n  if (blank(a) && blank(b)) return 0;\n  if (blank(a)) return -1;\n  if (blank(b)) return 1;\n  if (typeof a === \"number\" && typeof b === \"number\") return a - b;\n  if (typeof a === \"boolean\" && typeof b === \"boolean\") return Number(a) - Number(b);\n  return String(a).localeCompare(String(b), \"en\", { numeric: true, sensitivity: \"base\" });\n}\n\nexport function useSortable<T extends Record<string, unknown>>(items: T[]): {\n  sorted: T[];\n  sort: SortState;\n  toggleSort: (key: string) => void;\n} {\n  const [sort, setSort] = useState<SortState>(null);\n\n  const sorted = useMemo(() => {\n    if (!sort) return items;\n    const { key, dir } = sort;\n    const sign = dir === \"asc\" ? 1 : -1;\n    // Array.prototype.sort is stable, so ties keep the default order.\n    return [...items].sort((a, b) => sign * compareCells(a[key], b[key]));\n  }, [items, sort]);\n\n  const toggleSort = (key: string) =>\n    setSort((prev) =>\n      prev?.key === key ? (prev.dir === \"asc\" ? { key, dir: \"desc\" } : null) : { key, dir: \"asc\" },\n    );\n\n  return { sorted, sort, toggleSort };\n}\n",
+      "type": "registry:hook"
+    }
+  ],
+  "type": "registry:hook"
+}

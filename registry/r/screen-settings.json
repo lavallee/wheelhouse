@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "screen-settings",
+  "title": "Settings screen",
+  "description": "Small forms saved by commands, plus copyable terminal commands.",
+  "registryDependencies": [
+    "button",
+    "input",
+    "@wheelhouse/shell",
+    "@wheelhouse/transport"
+  ],
+  "files": [
+    {
+      "path": "src/screens/settings.tsx",
+      "content": "// Settings: one small form per concern, saved by a command, plus commands the\n// operator can copy and run themselves.\nimport { useEffect, useState } from \"react\";\nimport { Button } from \"@/components/ui/button\";\nimport { Input } from \"@/components/ui/input\";\nimport { CopyLine, ErrorBanner, Loading, Section, Small } from \"@/components/shell\";\nimport { command, useResource } from \"@/lib/transport\";\n\ntype Settings = { budget: { dollars_per_run: number; items_per_run: number }; cli: string };\n\nexport function SettingsScreen() {\n  const { data, error, loading, refetch } = useResource<Settings>(\"/api/settings\", false);\n  const [dollars, setDollars] = useState(\"\");\n  const [items, setItems] = useState(\"\");\n  const [state, setState] = useState<{ saving?: boolean; saved?: boolean; error?: string }>({});\n  useEffect(() => {\n    if (data) {\n      setDollars(String(data.budget.dollars_per_run));\n      setItems(String(data.budget.items_per_run));\n    }\n  }, [data]);\n  if (!data) return loading ? <Loading what=\"settings\" /> : <ErrorBanner message={error} onRetry={refetch} />;\n  const changed = dollars !== String(data.budget.dollars_per_run) || items !== String(data.budget.items_per_run);\n  return (\n    <>\n      <ErrorBanner message={error} onRetry={refetch} />\n      <Section title=\"Run budget\" description=\"A run that would exceed either limit is refused before it starts.\">\n        <form\n          className=\"grid max-w-md gap-3\"\n          onSubmit={async (event) => {\n            event.preventDefault();\n            setState({ saving: true });\n            try {\n              // The budget shows only here and on the runs screen; nothing else needs a refetch.\n              await command(\"budget\", { dollars_per_run: Number(dollars), items_per_run: Number(items) }, { invalidate: [\"/api/settings\", \"/api/runs\"] });\n              setState({ saved: true });\n            } catch (reason) {\n              setState({ error: reason instanceof Error ? reason.message : \"Saving did not work.\" });\n            }\n          }}\n        >\n          <label className=\"grid gap-1 text-xs text-muted-foreground\">\n            Dollars per run\n            <Input className=\"h-8\" inputMode=\"decimal\" value={dollars} onChange={(event) => { setDollars(event.target.value); setState({}); }} />\n          </label>\n          <label className=\"grid gap-1 text-xs text-muted-foreground\">\n            Submissions per run\n            <Input className=\"h-8\" inputMode=\"numeric\" value={items} onChange={(event) => { setItems(event.target.value); setState({}); }} />\n          </label>\n          <ErrorBanner message={state.error} />\n          <div className=\"flex items-center gap-3\">\n            <Button size=\"sm\" type=\"submit\" disabled={!changed || state.saving}>{state.saving ? \"Saving…\" : \"Save budget\"}</Button>\n            {state.saved && !changed && <Small role=\"status\">Saved.</Small>}\n          </div>\n        </form>\n      </Section>\n      <Section title=\"From a terminal\" description=\"This admin shows the command; it never runs it for you.\">\n        <CopyLine value={data.cli} />\n      </Section>\n    </>\n  );\n}\n",
+      "type": "registry:file",
+      "target": "src/screens/settings.tsx"
+    }
+  ],
+  "type": "registry:file"
+}

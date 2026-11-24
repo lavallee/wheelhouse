@@ -1,0 +1,23 @@
+{
+  "note": "Arrangements of the overview's parts: waiting, stats, latest-run. Add a layout here; no code changes needed.",
+  "layouts": [
+    {
+      "key": "attention",
+      "label": "Attention first",
+      "hint": "What is waiting on you, then the numbers",
+      "rows": [
+        { "grid": "one", "cells": [["waiting"]] },
+        { "grid": "one", "cells": [["stats"]] },
+        { "grid": "one", "cells": [["latest-run"]] }
+      ]
+    },
+    {
+      "key": "side-by-side",
+      "label": "Side by side",
+      "hint": "The queue beside the numbers and the latest run",
+      "rows": [
+        { "grid": "main-side", "cells": [["waiting"], ["stats", "latest-run"]] }
+      ]
+    }
+  ]
+}

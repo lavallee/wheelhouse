@@ -1,0 +1,14 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "use-shortcuts",
+  "title": "Keyboard shortcuts",
+  "description": "Screen shortcuts that never fire while the user is typing or a modifier is held.",
+  "files": [
+    {
+      "path": "src/hooks/use-shortcuts.ts",
+      "content": "// Keyboard shortcuts for a screen. Keys never fire while the user is typing in\n// a field, while a modifier is held (unless the binding names it), while a\n// dialog is open (it owns the keyboard), or while `enabled` is false. Pass\n// `{ inDialogs: true }` for shortcuts that belong to the dialog itself.\nimport { useEffect, useRef } from \"react\";\n\nexport type Shortcuts = Record<string, (event: KeyboardEvent) => void>;\n\nexport function isTyping(target: EventTarget | null): boolean {\n  return target instanceof Element && Boolean(target.closest(\"input, textarea, select, [contenteditable='true'], [contenteditable='']\"));\n}\n\n/**\n * Bind keys by `event.key`, lowercased: \"j\", \"1\", \"escape\", \" \" for space.\n * Prefix with \"shift+\" for a shifted binding, e.g. \"shift+ \".\n */\nexport function useShortcuts(bindings: Shortcuts, enabled = true, options: { inDialogs?: boolean } = {}): void {\n  const latest = useRef(bindings);\n  latest.current = bindings;\n  const inDialogs = Boolean(options.inDialogs);\n  useEffect(() => {\n    if (!enabled) return;\n    const onKey = (event: KeyboardEvent) => {\n      if (event.metaKey || event.ctrlKey || event.altKey || isTyping(event.target)) return;\n      if (!inDialogs && document.querySelector('[role=\"dialog\"][data-state=\"open\"], [role=\"alertdialog\"][data-state=\"open\"], dialog[open]')) return;\n      const key = event.key.toLowerCase();\n      const handler = (event.shiftKey && latest.current[`shift+${key}`]) || (!event.shiftKey || key.length > 1 || !/[a-z ]/.test(key) ? latest.current[key] : undefined);\n      if (handler) {\n        event.preventDefault();\n        handler(event);\n      }\n    };\n    window.addEventListener(\"keydown\", onKey);\n    return () => window.removeEventListener(\"keydown\", onKey);\n  }, [enabled, inDialogs]);\n}\n",
+      "type": "registry:hook"
+    }
+  ],
+  "type": "registry:hook"
+}

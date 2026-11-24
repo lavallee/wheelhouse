@@ -1,0 +1,28 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "screen-overview",
+  "title": "Overview screen",
+  "description": "What needs the operator, then the state of the system.",
+  "registryDependencies": [
+    "@wheelhouse/shell",
+    "@wheelhouse/transport",
+    "@wheelhouse/route",
+    "@wheelhouse/layout",
+    "@wheelhouse/views"
+  ],
+  "files": [
+    {
+      "path": "src/screens/overview.tsx",
+      "content": "// Overview: what needs the operator, then the state of the system. The parts\n// are named once and arranged by the layouts in overview.layouts.json.\nimport { Layout, parseLayouts } from \"@/components/layout\";\nimport { ViewSwitch, useView } from \"@/components/views\";\nimport { Empty, ErrorBanner, Loading, Move, Section, Stat, StatusDot, count, money, stamp } from \"@/components/shell\";\nimport { href, type Route } from \"@/lib/route\";\nimport layoutData from \"@/screens/overview.layouts.json\";\nimport { useResource } from \"@/lib/transport\";\n\ntype Overview = {\n  stats: { new: number; held: number; approved: number; rejected: number };\n  needs_you: { id: string; title: string; source: string; received: string }[];\n  latest_run: { id: string; started: string; status: string; items: number; cost: number } | null;\n};\n\nconst PARTS = [\"waiting\", \"stats\", \"latest-run\"] as const;\nconst LAYOUTS = parseLayouts(layoutData, PARTS);\n\nexport function OverviewScreen({ route }: { route: Route }) {\n  const { view, remember } = useView(\"overview\", LAYOUTS, route.params.get(\"view\"));\n  const { data, error, loading, refetch } = useResource<Overview>(\"/api/overview\");\n  if (!data) return loading ? <Loading what=\"overview\" /> : <ErrorBanner message={error} onRetry={refetch} />;\n  const { stats, needs_you, latest_run } = data;\n  const spec = LAYOUTS.find((layout) => layout.key === view.key) ?? LAYOUTS[0];\n  const parts = {\n    waiting: (\n      <Section\n        title=\"Waiting on you\"\n        description={stats.new ? `${count(stats.new)} submissions have not been reviewed. Oldest first.` : undefined}\n        action={stats.new > 0 && <a className=\"text-xs underline underline-offset-2\" href={href(\"review\")}>Review them</a>}\n      >\n        {needs_you.length === 0 ? (\n          <Empty>Nothing is waiting on you.</Empty>\n        ) : (\n          <ul className=\"divide-y\">\n            {needs_you.map((item) => (\n              <li key={item.id} className=\"flex items-center justify-between gap-3 py-2\">\n                <a href={href(\"items\", [item.id])} className=\"min-w-0\">\n                  <span className=\"block truncate text-sm font-medium\">{item.title}</span>\n                  <span className=\"block text-xs text-muted-foreground\">{item.source} · received {stamp(item.received)}</span>\n                </a>\n                <Move who=\"you\" />\n              </li>\n            ))}\n          </ul>\n        )}\n      </Section>\n    ),\n    stats: (\n      <div className=\"@container\">\n      <div className=\"grid grid-cols-2 gap-3 @2xl:grid-cols-4\">\n          <Stat label=\"New\" value={count(stats.new)} href={href(\"items\", [], { status: \"new\" })} />\n          <Stat label=\"Held\" value={count(stats.held)} href={href(\"items\", [], { status: \"held\" })} />\n          <Stat label=\"Approved\" value={count(stats.approved)} href={href(\"items\", [], { status: \"approved\" })} />\n          <Stat label=\"Rejected\" value={count(stats.rejected)} href={href(\"items\", [], { status: \"rejected\" })} />\n        </div>\n      </div>\n    ),\n    \"latest-run\": (\n      <Section title=\"Latest run\" action={<a className=\"text-xs underline underline-offset-2\" href={href(\"runs\")}>All runs</a>}>\n        {latest_run ? (\n          <p className=\"flex flex-wrap items-center gap-x-4 gap-y-1 text-sm\">\n            <StatusDot status={latest_run.status} />\n            <span>{stamp(latest_run.started)}</span>\n            <span className=\"tabular-nums\">{count(latest_run.items)} items</span>\n            <span className=\"tabular-nums\">{money(latest_run.cost)}</span>\n          </p>\n        ) : (\n          <Empty>No run has happened yet.</Empty>\n        )}\n      </Section>\n    ),\n  };\n  return (\n    <>\n      <ErrorBanner message={error} onRetry={refetch} />\n      <div className=\"flex justify-end\">\n        <ViewSwitch views={LAYOUTS} view={view} to={(key) => href(\"overview\", [], { view: key })} onPick={remember} />\n      </div>\n      <Layout spec={spec} parts={parts} />\n    </>\n  );\n}\n",
+      "type": "registry:file",
+      "target": "src/screens/overview.tsx"
+    },
+    {
+      "path": "src/screens/overview.layouts.json",
+      "content": "{\n  \"note\": \"Arrangements of the overview's parts: waiting, stats, latest-run. Add a layout here; no code changes needed.\",\n  \"layouts\": [\n    {\n      \"key\": \"attention\",\n      \"label\": \"Attention first\",\n      \"hint\": \"What is waiting on you, then the numbers\",\n      \"rows\": [\n        { \"grid\": \"one\", \"cells\": [[\"waiting\"]] },\n        { \"grid\": \"one\", \"cells\": [[\"stats\"]] },\n        { \"grid\": \"one\", \"cells\": [[\"latest-run\"]] }\n      ]\n    },\n    {\n      \"key\": \"side-by-side\",\n      \"label\": \"Side by side\",\n      \"hint\": \"The queue beside the numbers and the latest run\",\n      \"rows\": [\n        { \"grid\": \"main-side\", \"cells\": [[\"waiting\"], [\"stats\", \"latest-run\"]] }\n      ]\n    }\n  ]\n}\n",
+      "type": "registry:file",
+      "target": "src/screens/overview.layouts.json"
+    }
+  ],
+  "type": "registry:file"
+}

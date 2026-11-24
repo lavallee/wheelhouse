@@ -1,0 +1,14 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "views",
+  "title": "View switch",
+  "description": "Alternate views of one screen: remembered, shareable in the address, small.",
+  "files": [
+    {
+      "path": "src/components/views.tsx",
+      "content": "// Alternate views of one screen. The choice is remembered per screen and kept\n// in the address, and the control stays small and out of the way. Whatever is\n// selected or filtered belongs to the screen, not the view, so it carries across.\nimport { useCallback, useState } from \"react\";\nimport { cn } from \"@/lib/utils\";\n\nexport type ViewChoice = { key: string; label: string; hint?: string };\n\n/**\n * `screen` names the storage slot. `current` is the view named in the address,\n * if any; `fallback` picks one when nothing is stored (for example by screen width).\n */\nexport function useView(screen: string, views: ViewChoice[], current: string | null, fallback?: () => string) {\n  const slot = `view:${screen}`;\n  const valid = (key: string | null | undefined) => views.find((view) => view.key === key);\n  const [stored, setStored] = useState(() => {\n    try {\n      return localStorage.getItem(slot);\n    } catch {\n      return null;\n    }\n  });\n  const view = valid(current) ?? valid(stored) ?? valid(fallback?.()) ?? views[0];\n  const remember = useCallback(\n    (key: string) => {\n      setStored(key);\n      try {\n        localStorage.setItem(slot, key);\n      } catch {\n        /* private mode: the address still carries the choice */\n      }\n    },\n    [slot],\n  );\n  return { view, remember };\n}\n\n/** A small segmented control. `to` returns the link for a view, so the choice is shareable. */\nexport function ViewSwitch({ views, view, to, onPick }: { views: ViewChoice[]; view: ViewChoice; to: (key: string) => string; onPick: (key: string) => void }) {\n  return (\n    <nav aria-label=\"View\" className=\"inline-flex shrink-0 items-center rounded-lg border p-0.5 text-xs\">\n      {views.map((choice) => (\n        <a\n          key={choice.key}\n          href={to(choice.key)}\n          title={choice.hint}\n          aria-current={choice.key === view.key ? \"true\" : undefined}\n          onClick={() => onPick(choice.key)}\n          className={cn(\n            \"rounded-md px-2 py-1 text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none\",\n            choice.key === view.key && \"bg-muted font-medium text-foreground\",\n          )}\n        >\n          {choice.label}\n        </a>\n      ))}\n    </nav>\n  );\n}\n",
+      "type": "registry:component"
+    }
+  ],
+  "type": "registry:component"
+}
